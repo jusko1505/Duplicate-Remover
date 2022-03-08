@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.*;
 import java.util.HashMap;
 import java.util.Scanner;
 // TO DO: DECLARE THE VARIABLE TYPES OF K,V IN THE HASH MAP, AND FIX ANY COMPILE ERRORS
@@ -16,6 +17,7 @@ public class duplicateFinder {
     static HashMap<String, File> map = new HashMap<String, File>();
     //create a static hashmap here?
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException{
+        double t2 = (new Date()).getTime();
         Scanner sc = new Scanner(System.in);
         MessageDigest md = MessageDigest.getInstance("MD5");
         System.out.println("Please make sure that you do not have a folder called \"Duplicates\"");
@@ -51,6 +53,9 @@ public class duplicateFinder {
         }
         sc.close();
         System.out.println("Done! Check out the duplicates folder and verify its content.");
+        double t3 = (new Date()).getTime();
+        double timeToSeachBinary = (t3 - t2)*0.001;
+        System.out.println("Total execution time: " + timeToSeachBinary+"s");
     }
     private static String checksum(MessageDigest digest, File file) throws IOException{
         //reads bytes from a file
