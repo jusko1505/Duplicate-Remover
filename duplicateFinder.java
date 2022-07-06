@@ -9,28 +9,34 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.HashMap;
 import java.util.Scanner;
-// TO DO: DECLARE THE VARIABLE TYPES OF K,V IN THE HASH MAP, AND FIX ANY COMPILE ERRORS
-// REMEMBER TO COMPILE WITH javac -Xlint:unchecked fileHashTest.java
 
 public class duplicateFinder {
 
-    static HashMap<String, File> map = new HashMap<String, File>();
-    //create a static hashmap here?
+    static HashMap<String, File> map;
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException{
-        double t2 = (new Date()).getTime();
+        
         Scanner sc = new Scanner(System.in);
         MessageDigest md = MessageDigest.getInstance("MD5");
-        System.out.println("Please make sure that you do not have a folder called \"Duplicates\"");
-        System.out.println("Enter the directory in which you want to find duplicates:");
+        welcomeMessage();
+
         String path = sc.nextLine();
+        long t2 = (new Date()).getTime();
         File directory = new File(path);
         File [] directoryList = directory.listFiles();
         File dupeFolderPath = createDupeFolder(path);
+
+        /* If the directory list is a folder */
         if (directoryList != null){
+            /* If that folder contains files */
             if(directoryList.length != 0){
+                /* Initialize hashmap capacity because resizing is expensive  */
+                int hsSize = (int)((directoryList.length+1)/0.75);
+                map = new HashMap<String, File>(hsSize);
                 for (File potentialDupe: directoryList){
+                    /* For each file, if it is not a folder, find its checksum */
                     if (!potentialDupe.isDirectory()){
                         String hash = checksum(md, potentialDupe);
+                        /* If our hashmap contains that file, move it to the duplicates folder */
                         if (map.containsKey(hash)){
                             if(compareFileSize(potentialDupe, map.get(hash))){
                                 cutNPasteFile(potentialDupe, dupeFolderPath);
@@ -42,20 +48,22 @@ public class duplicateFinder {
                     }
                 }
             }
+            /* The directory list does not contain any files */
             else{
                 System.out.println("The directory is empty. Exiting program.");
                 System.exit(0);
             }
         }
+        /* The directory list is not a folder; it is a single file */
         else{
             System.out.println("The path points to a single file. Exiting program.");
             System.exit(0);
         }
         sc.close();
         System.out.println("Done! Check out the duplicates folder and verify its content.");
-        double t3 = (new Date()).getTime();
-        double timeToSeachBinary = (t3 - t2)*0.001;
-        System.out.println("Total execution time: " + timeToSeachBinary+"s");
+        long t3 = (new Date()).getTime();
+        long executionTime = (t3 - t2);
+        System.out.println("Total execution time: " + executionTime +" ms");
     }
     private static String checksum(MessageDigest digest, File file) throws IOException{
         //reads bytes from a file
@@ -72,15 +80,14 @@ public class duplicateFinder {
 
         byte[] bytes = digest.digest();
         StringBuilder sb = new StringBuilder();
-        //converting a byte array into hexadecimal. Maybe can find a method online to do this
-        //ex datatypeconverter in java ---> the method is called .printHexbinary(bytes)
+        
         for (int i = 0; i < bytes.length; i++){
             sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
         }
 
         return sb.toString();
     }
-    //creates the duplicates folder
+    /* creates the duplicates folder */
     public static File createDupeFolder(String path){
         String temp = path +"\\Duplicates";
         try{
@@ -94,21 +101,24 @@ public class duplicateFinder {
         return folderPath;
 
     }
-    //moves the file to the duplicates folder
+    /*moves the file to the duplicates folder*/
     public static void cutNPasteFile(File file, File destination){
         File appendToDestination = new File(destination.getAbsolutePath() + "\\" + file.getName());
         file.renameTo(appendToDestination);
     }
-    //returns true if the two files have the same size
+    /* returns true if the two files have the same size
+    used in combination with checksum to find if two files are the same */
     public static boolean compareFileSize(File file1, File file2){
         double bytes1 = file1.length();
         double bytes2 = file2.length();
         if (bytes1 == bytes2){
             return true;
         }
-        else{
-            return false;
-        }
-        
+        return false;
+    }
+
+    public static void welcomeMessage(){
+        System.out.println("Please make sure that you do not have a folder called \"Duplicates\"");
+        System.out.println("Enter the directory in which you want to find duplicates:");
     }
 }
